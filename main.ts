@@ -1,7 +1,7 @@
 // --- Deno Standard Library Imports ---
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-// FINAL CORRECT IMPORT: The function is named 'encode', not 'encodeToString'.
-import { encode } from "https://deno.land/std@0.224.0/encoding/hex.ts";
+// FINAL, VERIFIED CORRECT IMPORT: The function is 'encodeHex'.
+import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 
 // --- Constants ---
 const GOOGLE_API_HOST = "https://generativelanguage.googleapis.com";
@@ -25,8 +25,8 @@ const rotationState = new Map<string, number>();
 async function sha256(text: string): Promise<string> {
     const messageBuffer = new TextEncoder().encode(text);
     const hashBuffer = await crypto.subtle.digest("SHA-256", messageBuffer);
-    // FINAL CORRECT FUNCTION CALL: Use 'encode()' to convert the ArrayBuffer to a hex string.
-    return encode(new Uint8Array(hashBuffer));
+    // FINAL, VERIFIED CORRECT FUNCTION CALL: Use 'encodeHex' on the ArrayBuffer.
+    return encodeHex(hashBuffer);
 }
 
 /**
@@ -115,7 +115,6 @@ async function handler(req: Request): Promise<Response> {
             if (response.status >= 400 && response.status < 500) {
                 console.warn(`Key at index ${keyIndex} failed with status ${response.status}. Trying next key.`);
             } else {
-                // For server errors (5xx) or other unexpected issues, stop and return the error.
                 const responseHeaders = new Headers(response.headers);
                 responseHeaders.set("Access-Control-Allow-Origin", "*");
                  return new Response(response.body, {
@@ -133,7 +132,7 @@ async function handler(req: Request): Promise<Response> {
     rotationState.set(keysHash, 0);
     return new Response(JSON.stringify({ error: "All provided Google API Keys failed." }), {
         status: 502,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
 }
 
