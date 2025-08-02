@@ -2,7 +2,7 @@
 // 'serve' is used to create the HTTP server.
 // 'toHashString' is a utility to convert crypto hash buffers to strings.
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { toHashString } from "https://deno.land/std@0.224.0/crypto/to_hash_string.ts";
+import { toHashString } from "https://deno.land/std@0.224.0/crypto/mod.ts"; // <-- THIS LINE IS NOW CORRECT
 
 // --- Constants ---
 // The host for the Google Generative Language API.
@@ -73,7 +73,7 @@ async function handler(req: Request): Promise<Response> {
         });
     }
 
-    // --- Determine a   nd Validate Google API Keys ---
+    // --- Determine and Validate Google API Keys ---
     // Use keys from the header if provided, otherwise fall back to environment variables.
     const googleApiKeysString = keysFromHeader || BUILT_IN_GOOGLE_KEYS;
     if (!googleApiKeysString) {
@@ -157,5 +157,5 @@ async function handler(req: Request): Promise<Response> {
 
 // --- Server Startup ---
 // Start the Deno HTTP server and pass all requests to the handler.
-console.log("Proxy server starting on http://localhost:8000");
+console.log("Proxy server starting...");
 serve(handler);
