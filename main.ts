@@ -1,7 +1,7 @@
 // --- Deno Standard Library Imports ---
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-// CORRECT IMPORT: Use 'encodeToString' from the 'hex' module to create the hash string.
-import { encodeToString } from "https://deno.land/std@0.224.0/encoding/hex.ts";
+// FINAL CORRECT IMPORT: The function is named 'encode', not 'encodeToString'.
+import { encode } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 
 // --- Constants ---
 const GOOGLE_API_HOST = "https://generativelanguage.googleapis.com";
@@ -25,8 +25,8 @@ const rotationState = new Map<string, number>();
 async function sha256(text: string): Promise<string> {
     const messageBuffer = new TextEncoder().encode(text);
     const hashBuffer = await crypto.subtle.digest("SHA-256", messageBuffer);
-    // CORRECT FUNCTION CALL: Use encodeToString to convert the ArrayBuffer to a hex string.
-    return encodeToString(new Uint8Array(hashBuffer));
+    // FINAL CORRECT FUNCTION CALL: Use 'encode()' to convert the ArrayBuffer to a hex string.
+    return encode(new Uint8Array(hashBuffer));
 }
 
 /**
@@ -115,7 +115,14 @@ async function handler(req: Request): Promise<Response> {
             if (response.status >= 400 && response.status < 500) {
                 console.warn(`Key at index ${keyIndex} failed with status ${response.status}. Trying next key.`);
             } else {
-                return response;
+                // For server errors (5xx) or other unexpected issues, stop and return the error.
+                const responseHeaders = new Headers(response.headers);
+                responseHeaders.set("Access-Control-Allow-Origin", "*");
+                 return new Response(response.body, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: responseHeaders,
+                });
             }
         } catch (error) {
             console.error(`Request failed with key at index ${keyIndex}:`, error);
